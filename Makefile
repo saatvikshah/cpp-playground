@@ -1,14 +1,14 @@
 BUILD_DIR  ?= build
 BUILD_TYPE ?= Release
 GENERATOR  ?= Ninja
-PROJECT    ?=
 BENCH_ARGS ?=
+
+VERBS   := all build test bench clean configure format help
+PROJECT := $(firstword $(filter-out $(VERBS),$(MAKECMDGOALS)))
 
 CMAKE_FLAGS := -S . -B $(BUILD_DIR) -G "$(GENERATOR)" -DCMAKE_BUILD_TYPE=$(BUILD_TYPE)
 
-.PHONY: all configure build test bench run clean format help
-
-all: build
+.PHONY: $(VERBS)
 
 configure:
 	@cmake $(CMAKE_FLAGS)
@@ -29,22 +29,30 @@ endif
 
 bench: build
 ifeq ($(PROJECT),)
-	$(error PROJECT=<name> is required for `make bench`)
-endif
+	@for bin in $(BUILD_DIR)/projects/*/*_bench; do \
+	  [ -x "$$bin" ] && echo "==> $$bin" && "$$bin" $(BENCH_ARGS); \
+	done
+else
 	@$(BUILD_DIR)/projects/$(PROJECT)/$(PROJECT)_bench $(BENCH_ARGS)
+endif
 
-run: test
+all: build test bench
 
 clean:
+ifeq ($(PROJECT),)
 	@rm -rf $(BUILD_DIR)
+else
+	@rm -rf $(BUILD_DIR)/projects/$(PROJECT)
+endif
 
 format:
 	@pre-commit run --all-files
 
 help:
-	@echo "Targets:"
-	@echo "  make build [PROJECT=name] [BUILD_TYPE=Debug|Release]"
-	@echo "  make test  [PROJECT=name]"
-	@echo "  make bench  PROJECT=name  [BENCH_ARGS=...]"
-	@echo "  make run   [PROJECT=name]     # configure + build + test"
-	@echo "  make clean | make format"
+	@echo "Usage: make <verb> [project]"
+	@echo "  verbs:   build | test | bench | all | clean"
+	@echo "  project: toy name (e.g. 1_hello_world); omit to act on all"
+	@echo "  vars:    BUILD_TYPE=Debug|Release   BENCH_ARGS=..."
+
+%:
+	@:
