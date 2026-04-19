@@ -3,7 +3,7 @@ BUILD_TYPE ?= Release
 GENERATOR  ?= Ninja
 BENCH_ARGS ?=
 
-VERBS   := all build test bench clean configure format help
+VERBS   := all build test bench clean configure format help new
 PROJECT := $(firstword $(filter-out $(VERBS),$(MAKECMDGOALS)))
 
 CMAKE_FLAGS := -S . -B $(BUILD_DIR) -G "$(GENERATOR)" -DCMAKE_BUILD_TYPE=$(BUILD_TYPE)
@@ -48,10 +48,18 @@ endif
 format:
 	@pre-commit run --all-files
 
+new:
+ifeq ($(PROJECT),)
+	@echo "usage: make new <snake_name>" >&2; exit 2
+else
+	@bash scripts/add_toy_project.sh $(PROJECT)
+endif
+
 help:
 	@echo "Usage: make <verb> [project]"
-	@echo "  verbs:   build | test | bench | all | clean"
+	@echo "  verbs:   build | test | bench | all | clean | new"
 	@echo "  project: toy name (e.g. 1_hello_world); omit to act on all"
+	@echo "           for 'new', a snake_case name (e.g. my_toy)"
 	@echo "  vars:    BUILD_TYPE=Debug|Release   BENCH_ARGS=..."
 
 %:
