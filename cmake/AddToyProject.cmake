@@ -38,6 +38,7 @@ function(add_toy_project)
     add_executable(${test_target} ${TOY_TEST_SOURCES})
     target_link_libraries(${test_target} PRIVATE ${lib_target} GTest::gtest_main)
     gtest_discover_tests(${test_target}
+      DISCOVERY_MODE PRE_TEST
       PROPERTIES LABELS "${TOY_NAME}")
   endif()
 

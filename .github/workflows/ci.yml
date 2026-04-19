@@ -36,7 +36,7 @@ jobs:
       - name: Cache FetchContent deps
         uses: actions/cache@v4
         with:
-          path: build/_deps
+          path: cmake-build-${{ matrix.build_type == 'Debug' && 'debug' || 'release' }}/_deps
           key: ${{ runner.os }}-${{ matrix.compiler.name }}-${{ matrix.build_type }}-deps-${{ hashFiles('CMakeLists.txt') }}
 
       - name: Test

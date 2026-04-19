@@ -1,7 +1,8 @@
-BUILD_DIR  ?= build
-BUILD_TYPE ?= Release
-GENERATOR  ?= Ninja
-BENCH_ARGS ?=
+BUILD_TYPE       ?= Release
+BUILD_TYPE_LOWER := $(shell echo $(BUILD_TYPE) | tr '[:upper:]' '[:lower:]')
+BUILD_DIR        ?= cmake-build-$(BUILD_TYPE_LOWER)
+GENERATOR        ?= Ninja
+BENCH_ARGS       ?=
 
 VERBS   := all build test bench clean configure format help new
 PROJECT := $(firstword $(filter-out $(VERBS),$(MAKECMDGOALS)))
