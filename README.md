@@ -35,6 +35,15 @@ ctest --test-dir build --output-on-failure
 
 ## Adding a new toy project
 
+```sh
+make new my_toy       # scaffolds projects/<N>_my_toy + updates root CMakeLists.txt
+make all 2_my_toy     # build + test + bench the new toy
+```
+
+`make new <name>` requires snake_case (`^[a-z][a-z0-9_]*$`) and auto-picks the next numeric prefix. The generated toy has a trivial `answer()` placeholder with a passing test and a benchmark — swap it out for whatever you're actually exploring.
+
+<details><summary>Manual fallback</summary>
+
 1. Create `projects/<N>_<name>/` with `include/`, `src/`, `tests/`, `benchmarks/` subdirs.
 2. Drop in a `CMakeLists.txt`:
 
@@ -52,6 +61,8 @@ ctest --test-dir build --output-on-failure
 3. Add `add_subdirectory(projects/<N>_<name>)` to the top-level `CMakeLists.txt`.
 
 Header-only toys can omit `SOURCES`.
+
+</details>
 
 ## Pre-commit hooks
 
