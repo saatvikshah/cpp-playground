@@ -1,0 +1,8 @@
+---
+BasedOnStyle: Google
+ColumnLimit: 100
+IndentWidth: 2
+Standard: c++20
+DerivePointerAlignment: false
+PointerAlignment: Left
+AllowShortFunctionsOnASingleLine: Inline
