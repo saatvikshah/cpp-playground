@@ -13,12 +13,16 @@ Dependencies (gtest, benchmark) are fetched automatically by CMake — no manual
 ## Quick start
 
 ```sh
-make run   PROJECT=1_hello_world    # configure + build + test one project
-make bench PROJECT=1_hello_world    # run its benchmark
-make test                           # run every project's tests
-make build BUILD_TYPE=Debug         # debug build of everything
-make clean
+make all   1_hello_world    # build + test + bench one project
+make test  1_hello_world    # just its tests
+make bench 1_hello_world    # just its benchmark
+make test                   # every project's tests
+make build BUILD_TYPE=Debug # debug build of everything
+make clean 1_hello_world    # wipe one project's build artifacts
+make clean                  # wipe the whole build dir
 ```
+
+Omit the project name to act on every toy.
 
 Raw cmake path if you want to skip the wrapper:
 
@@ -43,7 +47,7 @@ ctest --test-dir build --output-on-failure
    )
    ```
 
-   `NAME` must match the directory name so `make PROJECT=<N>_<name>` targets work.
+   `NAME` must match the directory name so `make <verb> <N>_<name>` targets work.
 
 3. Add `add_subdirectory(projects/<N>_<name>)` to the top-level `CMakeLists.txt`.
 
