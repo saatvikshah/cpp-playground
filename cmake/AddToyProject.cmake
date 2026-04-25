@@ -36,7 +36,7 @@ function(add_toy_project)
   if(TOY_TEST_SOURCES AND BUILD_TESTING)
     set(test_target "${TOY_NAME}_tests")
     add_executable(${test_target} ${TOY_TEST_SOURCES})
-    target_link_libraries(${test_target} PRIVATE ${lib_target} GTest::gtest_main)
+    target_link_libraries(${test_target} PRIVATE ${lib_target} GTest::gmock_main)
     gtest_discover_tests(${test_target}
       DISCOVERY_MODE PRE_TEST
       PROPERTIES LABELS "${TOY_NAME}")
