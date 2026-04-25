@@ -31,18 +31,18 @@ shopt -u nullglob
 full="${next}_${name}"
 proj_dir="$projects_dir/$full"
 
-mkdir -p "$proj_dir"/{src,tests,benchmarks,include/"$name"}
+mkdir -p "$proj_dir"/{tests,benchmarks}
 
 cat > "$proj_dir/CMakeLists.txt" <<EOF
 add_toy_project(
   NAME ${full}
-  SOURCES src/${name}.cpp
+  SOURCES ${name}.cpp
   TEST_SOURCES tests/${name}_test.cpp
   BENCH_SOURCES benchmarks/${name}_bench.cpp
 )
 EOF
 
-cat > "$proj_dir/include/${name}/${name}.hpp" <<EOF
+cat > "$proj_dir/${name}.hpp" <<EOF
 #pragma once
 
 namespace ${name} {
@@ -52,8 +52,8 @@ int answer();
 }  // namespace ${name}
 EOF
 
-cat > "$proj_dir/src/${name}.cpp" <<EOF
-#include "${name}/${name}.hpp"
+cat > "$proj_dir/${name}.cpp" <<EOF
+#include "${name}.hpp"
 
 namespace ${name} {
 
@@ -63,7 +63,7 @@ int answer() { return 42; }
 EOF
 
 cat > "$proj_dir/tests/${name}_test.cpp" <<EOF
-#include "${name}/${name}.hpp"
+#include "${name}.hpp"
 
 #include <gtest/gtest.h>
 
@@ -75,7 +75,7 @@ EOF
 cat > "$proj_dir/benchmarks/${name}_bench.cpp" <<EOF
 #include <benchmark/benchmark.h>
 
-#include "${name}/${name}.hpp"
+#include "${name}.hpp"
 
 static void BM_Answer(benchmark::State& state) {
   for (auto _ : state) {

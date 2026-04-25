@@ -44,13 +44,13 @@ make all 2_my_toy     # build + test + bench the new toy
 
 <details><summary>Manual fallback</summary>
 
-1. Create `projects/<N>_<name>/` with `include/`, `src/`, `tests/`, `benchmarks/` subdirs.
+1. Create `projects/<N>_<name>/` with `tests/` and `benchmarks/` subdirs; drop `<name>.hpp` and `<name>.cpp` at the project root.
 2. Drop in a `CMakeLists.txt`:
 
    ```cmake
    add_toy_project(
      NAME <N>_<name>
-     SOURCES src/<name>.cpp
+     SOURCES <name>.cpp
      TEST_SOURCES tests/<name>_test.cpp
      BENCH_SOURCES benchmarks/<name>_bench.cpp
    )
