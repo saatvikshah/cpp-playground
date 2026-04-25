@@ -5,9 +5,9 @@
 #   BENCH_SOURCES  <b1>   [b2   ...]   # optional
 # )
 #
-# Expects an `include/` directory alongside the calling CMakeLists.txt which is
-# exposed publicly on the library target so tests and benchmarks can include
-# `<project/header.hpp>`.
+# The calling CMakeLists.txt's directory is exposed publicly on the library
+# target so tests and benchmarks can include the project's headers directly
+# (e.g. `#include "header.hpp"`).
 
 function(add_toy_project)
   set(options)
@@ -24,12 +24,12 @@ function(add_toy_project)
   if(TOY_SOURCES)
     add_library(${lib_target} STATIC ${TOY_SOURCES})
     target_include_directories(${lib_target} PUBLIC
-      "${CMAKE_CURRENT_SOURCE_DIR}/include")
+      "${CMAKE_CURRENT_SOURCE_DIR}")
     target_compile_features(${lib_target} PUBLIC cxx_std_23)
   else()
     add_library(${lib_target} INTERFACE)
     target_include_directories(${lib_target} INTERFACE
-      "${CMAKE_CURRENT_SOURCE_DIR}/include")
+      "${CMAKE_CURRENT_SOURCE_DIR}")
     target_compile_features(${lib_target} INTERFACE cxx_std_23)
   endif()
 
