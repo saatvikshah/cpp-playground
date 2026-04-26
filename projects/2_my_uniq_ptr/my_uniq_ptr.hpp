@@ -1,10 +1,10 @@
 #pragma once
 
-#include <algorithm>
+#include <memory>
+#include <utility>
 
 /**
  * TODO:
- * - make_unique
  * - Array specialization
  * - operator*, operator->
  * - Converting move support
@@ -81,4 +81,10 @@ private:
     T* ptr_{nullptr};
     Deleter deleter_;
 };
+
+template <typename T, typename... Args>
+unique_ptr<T> make_unique(Args&&... args)
+{
+    return unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
 }  // namespace my_uniq_ptr
