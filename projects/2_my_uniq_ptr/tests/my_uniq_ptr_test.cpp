@@ -2,17 +2,14 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <type_traits>
 
 using namespace testing;
 
 struct TestStub {
-  inline static bool m_destroyed_ = true;
+  bool& m_destroyed_;
 
-  static bool is_destroyed() {
-    return m_destroyed_;
-  }
-
-  TestStub() {
+  explicit TestStub(bool& destroyed): m_destroyed_(destroyed) {
     m_destroyed_ = false;
   }
 
@@ -21,12 +18,71 @@ struct TestStub {
   }
 };
 
+TEST(my_uniq_ptr, HoldsUnderlyingPointer) {
+  auto* elem = new int(10);
+  {
+    code::unique_ptr elem_ptr{elem};
+    EXPECT_THAT(elem_ptr.get(), Eq(elem));
+  }
+}
+
 TEST(my_uniq_ptr, DestroyedWhenOutOfScope) {
-  auto* elem = new TestStub();
-  EXPECT_THAT(elem->is_destroyed(), false);
+  bool check_destroyed;
+  auto* elem = new TestStub(check_destroyed);
+  EXPECT_THAT(check_destroyed, false);
   {
     code::unique_ptr elem_ptr{elem};
   }
-  EXPECT_THAT(elem->is_destroyed(), true);
-  // EXPECT_N
+  EXPECT_THAT(check_destroyed, true);
+}
+
+
+TEST(my_uniq_ptr, CopyCtorDisallowed) {
+  EXPECT_FALSE((std::is_copy_constructible_v<code::unique_ptr<int>>));
+}
+
+TEST(my_uniq_ptr, CopyAssignmentDisallowed) {
+  EXPECT_FALSE((std::is_copy_assignable_v<code::unique_ptr<int>>));
+}
+
+TEST(my_uniq_ptr, MoveCtorMovesPointer) {
+  auto* elem = new int(10);
+  {
+    code::unique_ptr elem_ptr{elem};
+    code::unique_ptr elem_ptr2{std::move(elem_ptr)};
+    EXPECT_EQ(elem_ptr.get(), nullptr);
+    EXPECT_EQ(elem_ptr2.get(), elem);
+  }
+}
+
+TEST(my_uniq_ptr, MoveAssignmentMovesPointer_DeletesOld) {
+  bool e1destroyed;
+  bool e2destroyed;
+  auto* elem1 = new TestStub(e1destroyed);
+  auto* elem2 = new TestStub(e2destroyed);
+  {
+    EXPECT_FALSE(e1destroyed);
+    EXPECT_FALSE(e2destroyed);
+    code::unique_ptr elem_ptr1{elem1};
+    code::unique_ptr elem_ptr2{elem2};
+    elem_ptr2 = std::move(elem_ptr1);
+    EXPECT_FALSE(e1destroyed);
+    EXPECT_TRUE(e2destroyed);
+    EXPECT_EQ(elem_ptr1.get(), nullptr);
+    EXPECT_EQ(elem_ptr2.get(), elem1);
+  }
+  EXPECT_TRUE(e1destroyed);
+}
+
+TEST(my_uniq_ptr, MoveAssignmentPreventsSelfMove) {
+  bool e1destroyed;
+  auto* elem1 = new TestStub(e1destroyed);
+  {
+    EXPECT_FALSE(e1destroyed);
+    code::unique_ptr elem_ptr1{elem1};
+    elem_ptr1 = std::move(elem_ptr1);
+    EXPECT_FALSE(e1destroyed);
+    EXPECT_EQ(elem_ptr1.get(), elem1);
+  }
+  EXPECT_TRUE(e1destroyed);
 }

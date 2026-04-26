@@ -1,14 +1,31 @@
 #pragma once
 
+#include <algorithm>
+
+/**
+ * TODO:
+ * - Custom deleter
+ * - release/reset/swap
+ * - make_unique
+ * - Array specialization
+ * - operator*, operator->, operator bool
+ * - get() const correctness
+ * - Converting move support
+ * - Benchmark
+ */
 namespace code {
 template <typename T>
 struct unique_ptr {
 
     explicit unique_ptr(T* ptr): ptr_(ptr) {}
 
+    T* get() {
+        return ptr_;
+    }
+
     explicit unique_ptr(unique_ptr&& other) noexcept
     {
-        ptr_ = other.ptr_;
+        std::swap(ptr_, other.ptr_);
     }
 
     unique_ptr& operator=(unique_ptr&& other) noexcept
@@ -16,10 +33,9 @@ struct unique_ptr {
         if (this == &other) {
             return *this;
         }
-        T* old = ptr_;
-        ptr_ = other.ptr_;
-        other.ptr_ = nullptr;
-        delete old;
+        delete ptr_;
+        ptr_ = nullptr;
+        std::swap(ptr_, other.ptr_);
         return *this;
     }
 
@@ -31,7 +47,6 @@ struct unique_ptr {
     }
 
 private:
-    T* ptr_;
+    T* ptr_{nullptr};
 };
-
 }  // namespace my_uniq_ptr
