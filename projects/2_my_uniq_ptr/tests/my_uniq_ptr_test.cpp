@@ -128,3 +128,11 @@ TEST(my_uniq_ptr, ResetSwitchesOwnership_DestroysOld) {
   }
   EXPECT_TRUE(e2destroyed);
 }
+
+TEST(my_uniq_ptr, DefaultDeleterSizeMatchedIntPtr) {
+  auto* elem = new int(10);
+  {
+    code::unique_ptr elem_ptr{elem};
+    EXPECT_THAT(sizeof(elem_ptr), Eq(sizeof(elem)));
+  }
+}

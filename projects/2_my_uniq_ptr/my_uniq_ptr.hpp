@@ -2,25 +2,29 @@
 
 #include <memory>
 #include <utility>
+#include "deleter_storage.hpp"
 
 /**
  * TODO:
  * - Array specialization
- * - operator*, operator->
  * - Converting move support
- * - Benchmark
+ * - Benchmark (complete)
  *
  * Lessons:
- * - `delete <x>` does not need a check if it is nullptr or not
- * - Templated deleter type: functor providing an operator()(T*), useful for file closing as an example.
+ * - `delete <x>` does not need a check if it is nullptr or not for default_delete / recommended for others
+ * - Templated deleter type:
+ *   - functor providing an operator()(T*), useful for file closing as an example.
+ *   - Can use EBO to avoid space of deleter (sizeof(unique_ptr<int>) == sizeof(int*))
  * - Testing: type trait checks for compile-time behavior, destruction checked with stubs
+ * - Benchmarking lessons(!)
  */
 namespace code {
-template <typename T, typename Deleter = std::default_delete<T>>
-struct unique_ptr {
+template <typename T, typename DeleterT = std::default_delete<T>>
+struct unique_ptr: private deleter_storage_t<DeleterT> {
+    using BaseT = deleter_storage_t<DeleterT>;
 
     explicit unique_ptr(T* ptr): ptr_(ptr) {}
-    explicit unique_ptr(T* ptr, Deleter deleter): ptr_(ptr), deleter_(deleter) {}
+    explicit unique_ptr(T* ptr, DeleterT deleter): ptr_(ptr), BaseT(std::move(deleter)) {}
 
     T* release() {
         return std::exchange(ptr_ , nullptr);
@@ -31,7 +35,7 @@ struct unique_ptr {
             return;
         }
         T* old = std::exchange(ptr_, ptr);
-        deleter_(old);
+        this->get_deleter()(old);
     }
 
     T* get() {
@@ -39,8 +43,9 @@ struct unique_ptr {
     }
 
     explicit unique_ptr(unique_ptr&& other) noexcept
+    : BaseT(std::move(other.get_deleter())),
+      ptr_(other.release())
     {
-        std::swap(ptr_, other.ptr_);
     }
 
     operator bool() const noexcept
@@ -48,12 +53,12 @@ struct unique_ptr {
         return ptr_ != nullptr;
     }
 
-    T& operator *()
+    T& operator*()
     {
         return *ptr_;
     }
 
-    T* operator ->()
+    T* operator->()
     {
         return ptr_;
     }
@@ -64,9 +69,10 @@ struct unique_ptr {
             return *this;
         }
         T* old = std::exchange(ptr_, other.ptr_);
-        deleter_(old);
+        this->get_deleter()(old);
         other.ptr_ = nullptr;
-        std::swap(deleter_, other.deleter_);
+        this->get_deleter() = std::move(other.get_deleter());
+        // std::swap(this->get_deleter(), other.get_deleter());
         return *this;
     }
 
@@ -74,12 +80,11 @@ struct unique_ptr {
     unique_ptr& operator=(const unique_ptr& other) = delete;
 
     ~unique_ptr() {
-        deleter_(ptr_);
+        this->get_deleter()(ptr_);
     }
 
 private:
     T* ptr_{nullptr};
-    Deleter deleter_;
 };
 
 template <typename T, typename... Args>
