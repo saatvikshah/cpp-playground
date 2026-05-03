@@ -44,3 +44,4 @@ include(AddToyProject)
 
 add_subdirectory(projects/1_hello_world)
 add_subdirectory(projects/2_my_uniq_ptr)
+add_subdirectory(projects/3_event_loop)
